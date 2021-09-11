@@ -1,10 +1,11 @@
 package com.example.springsecurityregistration.web.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GenericResponse {
 
@@ -20,18 +21,15 @@ public class GenericResponse {
         this.error = error;
     }
 
-    public GenericResponse(List<ObjectError> allErrors, String error) {
-        this.error = error;
-        String message = allErrors.stream().map(err -> {
-            if (err instanceof FieldError) {
-                return String.format("{\"field\":\"%s\",\"defaultMessage\":\"%s\"}", //JSON format
-                        ((FieldError) err).getField(), err.getDefaultMessage());
-            } else {
-                return String.format("{\"object\":\"%s\",\"defaultMessage\":\"%s\"}",
-                        err.getObjectName(), err.getDefaultMessage());
-            }
-        }).collect(Collectors.joining(","));
-        this.message = "[" + message + "]";
+    public GenericResponse(final List<FieldError> fieldErrors, final List<ObjectError> globalErrors) {
+        final ObjectMapper mapper = new ObjectMapper();
+        try {
+            this.message = mapper.writeValueAsString(fieldErrors);
+            this.error = mapper.writeValueAsString(globalErrors);
+        } catch (JsonProcessingException e) {
+            this.message = "";
+            this.error = "";
+        }
     }
 
     public String getMessage() {
