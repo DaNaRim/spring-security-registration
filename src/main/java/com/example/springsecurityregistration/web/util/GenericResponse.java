@@ -12,28 +12,26 @@ public class GenericResponse {
     private String error;
 
     public GenericResponse(final String message) {
-        super();
         this.message = message;
     }
 
     public GenericResponse(final String message, final String error) {
-        super();
         this.message = message;
         this.error = error;
     }
 
     public GenericResponse(List<ObjectError> allErrors, String error) {
         this.error = error;
-        String temp = allErrors.stream().map(e -> {
-            if (e instanceof FieldError) {
-                return String.format("{\"field\":\"%s\",\"defaultMessage\":\"%s\"}",
-                        ((FieldError) e).getField(), e.getDefaultMessage());
+        String message = allErrors.stream().map(err -> {
+            if (err instanceof FieldError) {
+                return String.format("{\"field\":\"%s\",\"defaultMessage\":\"%s\"}", //JSON format
+                        ((FieldError) err).getField(), err.getDefaultMessage());
             } else {
                 return String.format("{\"object\":\"%s\",\"defaultMessage\":\"%s\"}",
-                        e.getObjectName(), e.getDefaultMessage());
+                        err.getObjectName(), err.getDefaultMessage());
             }
         }).collect(Collectors.joining(","));
-        this.message = "[" + temp + "]";
+        this.message = "[" + message + "]";
     }
 
     public String getMessage() {

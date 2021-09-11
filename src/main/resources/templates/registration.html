@@ -10,26 +10,22 @@
     <div>
         <label th:text="#{label.user.firstName}">first</label>
         <input th:field="*{firstName}"/>
-        <p th:each="error: ${#fields.errors('firstName')}"
-           th:text="${error}">Validation error</p>
+        <p th:each="error: ${#fields.errors('firstName')}" th:text="${error}">Validation error</p>
     </div>
     <div>
         <label th:text="#{label.user.lastName}">last</label>
         <input th:field="*{lastName}"/>
-        <p th:each="error : ${#fields.errors('lastName')}"
-           th:text="${error}">Validation error</p>
+        <p th:each="error : ${#fields.errors('lastName')}" th:text="${error}">Validation error</p>
     </div>
     <div>
         <label th:text="#{label.user.email}">email</label>
         <input type="email" th:field="*{email}"/>
-        <p th:each="error : ${#fields.errors('email')}"
-           th:text="${error}">Validation error</p>
+        <p th:each="error : ${#fields.errors('email')}" th:text="${error}">Validation error</p>
     </div>
     <div>
         <label th:text="#{label.user.password}">password</label>
         <input type="password" th:field="*{password}"/>
-        <p th:each="error : ${#fields.errors('password')}"
-           th:text="${error}">Validation error</p>
+        <p th:each="error : ${#fields.errors('password')}" th:text="${error}">Validation error</p>
     </div>
     <div>
         <label th:text="#{label.user.confirmPass}">confirm</label>

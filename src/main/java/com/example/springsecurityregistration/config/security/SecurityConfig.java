@@ -1,4 +1,4 @@
-package com.example.springsecurityregistration.config;
+package com.example.springsecurityregistration.config.security;
 
 import com.example.springsecurityregistration.config.security.CustomAuthenticationProvider;
 import com.example.springsecurityregistration.service.MyUserDetailsService;
@@ -30,15 +30,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder(11);
-    }
-
-    @Bean
     public DaoAuthenticationProvider authProvider() {
         CustomAuthenticationProvider authProvider = new CustomAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(encoder());
         return authProvider;
     }
+
+    @Bean
+    public PasswordEncoder encoder() {
+        return new BCryptPasswordEncoder(11);
+    }
+
 }

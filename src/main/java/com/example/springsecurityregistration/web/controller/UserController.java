@@ -38,9 +38,12 @@ public class UserController {
     private final Environment environment;
 
     @Autowired
-    public UserController(IUserService userService, UserDetailsService userDetailsService,
-                          ApplicationEventPublisher eventPublisher, JavaMailSender mailSender,
-                          MessageSource messages, Environment environment) {
+    public UserController(IUserService userService,
+                          UserDetailsService userDetailsService,
+                          ApplicationEventPublisher eventPublisher,
+                          JavaMailSender mailSender,
+                          MessageSource messages,
+                          Environment environment) {
         this.userService = userService;
         this.userDetailsService = userDetailsService;
         this.eventPublisher = eventPublisher;
@@ -51,35 +54,33 @@ public class UserController {
 
     @GetMapping("/user/registration")
     public String showRegistrationForm(Model model) {
-        UserDto userDto = new UserDto();
-        model.addAttribute("user", userDto);
+        model.addAttribute("user", new UserDto());
         return "registration";
     }
 
     @PostMapping("/user/registration")
-    public ModelAndView registerUserAccount(@ModelAttribute("user")
-                                            @Valid UserDto userDto,
+    public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid UserDto userDto,
                                             HttpServletRequest request) {
-
         try {
             User registered = userService.registerNewUserAccount(userDto);
 
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered,
-                    request.getLocale(), request.getContextPath()));
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(
+                    registered, request.getLocale(), request.getContextPath()));
 
-        } catch (UserAlreadyExistException uaeEx) {
+        } catch (UserAlreadyExistException e) {
             ModelAndView mav = new ModelAndView("registration", "user", userDto);
             mav.addObject("message", "An account for that username/email already exists.");
             return mav;
-        } catch (RuntimeException ex) {
+        } catch (RuntimeException e) {
             return new ModelAndView("emailError", "user", userDto);
         }
-
         return new ModelAndView("successRegister", "user", userDto);
     }
 
     @GetMapping("/registrationConfirm")
-    public String confirmRegistration(Locale locale, Model model, @RequestParam("token") String token) {
+    public String confirmRegistration(@RequestParam("token") String token,
+                                      Locale locale,
+                                      Model model) {
 
         VerificationToken verificationToken = userService.getVerificationToken(token);
 
@@ -93,6 +94,7 @@ public class UserController {
             model.addAttribute("message", messageValue);
             return "redirect:/badUser.html?lang=" + locale.getLanguage();
         }
+        //TODO already verified
 
         User user = verificationToken.getUser();
         user.setEnabled(true);
@@ -103,13 +105,13 @@ public class UserController {
     }
 
     @GetMapping("/user/resendRegistrationToken")
-    public String resendRegistrationToken(HttpServletRequest request,
+    public String resendRegistrationToken(@RequestParam("token") String existingToken,
+                                          HttpServletRequest request,
                                           Locale locale,
-                                          @RequestParam("token") String existingToken,
                                           Model model) {
 
         final VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
-        final User user = userService.getUserByToken(newToken.getToken());
+        final User user = userService.getUserByToken(newToken.getToken()); //TODO optimize
         try {
             final String appUrl = String.format("http://%s:%d%s",
                     request.getServerName(), request.getServerPort(), request.getContextPath());
@@ -133,7 +135,8 @@ public class UserController {
                                                                    User user) {
 
         String message = messages.getMessage("message.resendToken", null, locale);
-        String confirmationUrl = String.format("%s/registrationConfirm.html?token=%s", contextPath, newToken.getToken());
+        String confirmationUrl = String.format("%s/registrationConfirm.html?token=%s",
+                contextPath, newToken.getToken());
 
         SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject("Resend Registration Token");
