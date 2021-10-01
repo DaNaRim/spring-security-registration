@@ -3,9 +3,10 @@ package com.example.springsecurityregistration.persistence.model;
 import javax.persistence.*;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
-public class VerificationToken {
+public class Token {
 
     private static final int EXPIRY_TIME_IN_HOURS = 24;
 
@@ -13,25 +14,54 @@ public class VerificationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false, updatable = false)
     private String token;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    private TokenType tokenType;
+
     private Date expiryDate;
 
-    public VerificationToken() {
+    public Token() {
     }
 
-    public VerificationToken(String token, User user) {
-        this.token = token;
+    public Token(User user, TokenType tokenType) {
+        this.token = UUID.randomUUID().toString();
         this.user = user;
+        this.tokenType = tokenType;
+        this.expiryDate = calculateExpiryDate();
+    }
+
+    public void updateToken() {
+        this.token = UUID.randomUUID().toString();
         this.expiryDate = calculateExpiryDate();
     }
 
     public boolean isExpired() {
         return this.getExpiryDate().before(Calendar.getInstance().getTime());
+    }
+
+    public void setNewExpiryDate() {
+        this.expiryDate = calculateExpiryDate();
+    }
+
+    private Date calculateExpiryDate() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR, EXPIRY_TIME_IN_HOURS);
+        return cal.getTime();
+    }
+
+
+    public TokenType getTokenType() {
+        return tokenType;
+    }
+
+    public void setTokenType(TokenType tokenType) {
+        this.tokenType = tokenType;
     }
 
     public Long getId() {
@@ -64,12 +94,5 @@ public class VerificationToken {
 
     public void setExpiryDate(Date expiryDate) {
         this.expiryDate = expiryDate;
-    }
-
-    private Date calculateExpiryDate() {
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.HOUR, EXPIRY_TIME_IN_HOURS);
-        return cal.getTime();
     }
 }

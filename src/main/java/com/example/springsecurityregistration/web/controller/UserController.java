@@ -1,58 +1,52 @@
 package com.example.springsecurityregistration.web.controller;
 
+import com.example.springsecurityregistration.error.InvalidTokenException;
 import com.example.springsecurityregistration.event.OnRegistrationCompleteEvent;
+import com.example.springsecurityregistration.persistence.model.Token;
 import com.example.springsecurityregistration.persistence.model.User;
-import com.example.springsecurityregistration.persistence.model.VerificationToken;
 import com.example.springsecurityregistration.service.IUserService;
+import com.example.springsecurityregistration.web.dto.PasswordDto;
 import com.example.springsecurityregistration.web.dto.UserDto;
+import com.example.springsecurityregistration.web.util.AuthorizationUtil;
 import com.example.springsecurityregistration.web.util.GenericResponse;
+import com.example.springsecurityregistration.web.util.MailUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
-import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailAuthenticationException;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Locale;
-import java.util.Objects;
 
 @Controller
 public class UserController {
 
     private final IUserService userService;
-    private final UserDetailsService userDetailsService;
     private final ApplicationEventPublisher eventPublisher;
-    private final JavaMailSender mailSender;
     private final MessageSource messages;
-    private final Environment environment;
+    private final MailUtil mailUtil;
 
     @Autowired
     public UserController(IUserService userService,
-                          UserDetailsService userDetailsService,
                           ApplicationEventPublisher eventPublisher,
-                          JavaMailSender mailSender,
                           MessageSource messages,
-                          Environment environment) {
+                          MailUtil mailUtil) {
         this.userService = userService;
-        this.userDetailsService = userDetailsService;
         this.eventPublisher = eventPublisher;
-        this.mailSender = mailSender;
         this.messages = messages;
-        this.environment = environment;
+        this.mailUtil = mailUtil;
     }
 
     @PostMapping("/user/registration")
-    public GenericResponse registerUserAccount(@Valid UserDto userDto,
-                                               HttpServletRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public @ResponseBody
+    GenericResponse registerUserAccount(@RequestBody @Valid UserDto userDto,
+                                        HttpServletRequest request) {
 
         User registered = userService.registerNewUserAccount(userDto);
         eventPublisher.publishEvent(
@@ -60,30 +54,24 @@ public class UserController {
         return new GenericResponse("success");
     }
 
-    @GetMapping("/registrationConfirm")
+    @PutMapping("/registrationConfirm")
     public String confirmRegistration(@RequestParam("token") String token,
                                       Locale locale,
                                       Model model) {
 
-        VerificationToken verificationToken = userService.getVerificationToken(token);
-
-        if (verificationToken == null) {
-            String message = messages.getMessage("auth.message.invalidToken", null, locale);
+        long id = AuthorizationUtil.getUserId();
+        try {
+            userService.validateVerificationToken(AuthorizationUtil.getUserId(), token);
+        } catch (InvalidTokenException e) {
+            String message = messages.getMessage("auth.message." + e.getMessage(), null, locale);
             model.addAttribute("message", message);
             return "redirect:/badUser.html?lang=" + locale.getLanguage();
-
-        } else if (verificationToken.isExpired()) {
-            String messageValue = messages.getMessage("auth.message.expired", null, locale);
-            model.addAttribute("message", messageValue);
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
         }
-        //TODO already verified
 
-        User user = verificationToken.getUser();
-        user.setEnabled(true);
-        userService.saveRegisteredUser(user);
+        userService.enableUser(id);
 
-        model.addAttribute("message", messages.getMessage("message.accountVerified", null, locale));
+        model.addAttribute("message",
+                messages.getMessage("message.accountVerified", null, locale));
         return "redirect:/login.html?lang=" + locale.getLanguage();
     }
 
@@ -93,18 +81,14 @@ public class UserController {
                                           Locale locale,
                                           Model model) {
 
-        final VerificationToken newToken = userService.generateNewVerificationToken(existingToken);
-        final User user = userService.getUserByToken(newToken.getToken()); //TODO optimize
+        Token newToken = userService.generateNewVerificationToken(existingToken);
+        User user = newToken.getUser();
         try {
-            final String appUrl = String.format("http://%s:%d%s",
-                    request.getServerName(), request.getServerPort(), request.getContextPath());
+            mailUtil.sendVerificationTokenEmail(getAppUrl(request), locale, newToken, user);
 
-            final SimpleMailMessage email = constructResetVerificationTokenEmail(appUrl, locale, newToken, user);
-
-            mailSender.send(email);
-        } catch (final MailAuthenticationException e) {
+        } catch (MailAuthenticationException e) {
             return "redirect:/emailError.html?lang=" + locale.getLanguage();
-        } catch (final Exception e) {
+        } catch (Exception e) {
             model.addAttribute("message", e.getLocalizedMessage());
             return "redirect:/login.html?lang=" + locale.getLanguage();
         }
@@ -112,24 +96,56 @@ public class UserController {
         return "redirect:/login.html?lang=" + locale.getLanguage();
     }
 
-    private String getAppUrl(HttpServletRequest request) {
-        return "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+    @PostMapping("/user/resetPassword")
+    public @ResponseBody
+    GenericResponse resetPassword(@RequestParam("email") String userEmail,
+                                  HttpServletRequest request) { //TODO transactional
+
+        User user = userService.findUserByEmail(userEmail);
+        String token = userService.createPasswordResetToken(user).getToken();
+        mailUtil.sendResetPasswordTokenEmail(getAppUrl(request), request.getLocale(), token, user);
+        return new GenericResponse(
+                messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
     }
 
-    private SimpleMailMessage constructResetVerificationTokenEmail(String contextPath,
-                                                                   Locale locale,
-                                                                   VerificationToken newToken,
-                                                                   User user) {
+    @GetMapping("/user/changePassword")
+    public String showChangePasswordPage(@RequestParam("token") String token,
+                                         Locale locale,
+                                         Model model) {
 
-        String message = messages.getMessage("message.resendToken", null, locale);
-        String confirmationUrl = String.format("%s/registrationConfirm.html?token=%s",
-                contextPath, newToken.getToken());
+        try {
+            userService.validatePasswordResetToken(AuthorizationUtil.getUserId(), token);
+        } catch (InvalidTokenException e) {
+            String message = messages.getMessage("auth.message." + e.getMessage(), null, locale);
+            return "redirect:/login.html?lang=" + locale.getLanguage() + "&message=" + message;
+        }
+        model.addAttribute("token", token);
+        return "redirect:/updatePassword.html?lang=" + locale.getLanguage();
+    }
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setSubject("Resend Registration Token");
-        email.setText(String.format("%s\r\n%s", message, confirmationUrl));
-        email.setFrom(Objects.requireNonNull(environment.getProperty("support.email")));
-        email.setTo(user.getEmail());
-        return email;
+    @PostMapping("/user/savePassword")
+    public @ResponseBody
+    GenericResponse savePassword(@RequestBody @Valid PasswordDto passwordDto,
+                                 Locale locale) {
+
+        userService.changeUserPassword(AuthorizationUtil.getUserId(), passwordDto.getNewPassword());
+        return new GenericResponse(messages.getMessage("message.resetPasswordSuc", null, locale));
+    }
+
+    @PostMapping("/user/updatePassword")
+    public @ResponseBody
+    GenericResponse changeUserPassword(@RequestBody @Valid PasswordDto passwordDto,
+                                       Locale locale) {
+        long id = AuthorizationUtil.getUserId();
+
+        userService.validateOldPassword(id, passwordDto.getOldPassword());
+        userService.changeUserPassword(id, passwordDto.getNewPassword());
+
+        return new GenericResponse(messages.getMessage("message.updatePasswordSuc", null, locale));
+    }
+
+    private String getAppUrl(HttpServletRequest request) {
+        return String.format("http://%s:%d%s",
+                request.getServerName(), request.getServerPort(), request.getContextPath());
     }
 }

@@ -38,16 +38,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({UserNotFoundException.class})
     public ResponseEntity<Object> handleUserNotFound(RuntimeException ex, WebRequest request) {
-        logger.error("404 Status Code", ex);
+        logger.warn("404 Status Code", ex);
         GenericResponse responseBody = new GenericResponse(
                 messages.getMessage("message.userNotFound", null, request.getLocale()), "UserNotFound");
 
         return handleExceptionInternal(ex, responseBody, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
-    @ExceptionHandler({ UserAlreadyExistException.class })
+    @ExceptionHandler({UserAlreadyExistException.class})
     public ResponseEntity<Object> handleUserAlreadyExist(RuntimeException ex, WebRequest request) {
-        logger.error("409 Status Code", ex);
+        logger.warn("409 Status Code", ex);
         GenericResponse bodyOfResponse = new GenericResponse(
                 messages.getMessage("message.regError", null, request.getLocale()), "UserAlreadyExist");
 

@@ -1,21 +1,35 @@
 package com.example.springsecurityregistration.service;
 
-import com.example.springsecurityregistration.error.UserAlreadyExistException;
+import com.example.springsecurityregistration.persistence.model.Token;
 import com.example.springsecurityregistration.persistence.model.User;
-import com.example.springsecurityregistration.persistence.model.VerificationToken;
 import com.example.springsecurityregistration.web.dto.UserDto;
 
 public interface IUserService {
 
-    User registerNewUserAccount(UserDto userDto) throws UserAlreadyExistException;
+    User registerNewUserAccount(UserDto userDto);
 
-    User getUserByToken(String verificationToken);
+    void enableUser(long userId);
 
-    void saveRegisteredUser(User user); //TODO optimize
+    User findUserByEmail(String email);
 
-    void createVerificationToken(User user, String token);
+    User findUserByToken(String verificationToken);
 
-    VerificationToken generateNewVerificationToken(String existingToken);
+    void saveRegisteredUser(User user);
 
-    VerificationToken getVerificationToken(String VerificationToken);
+    Token createVerificationToken(User user);
+
+    void validateVerificationToken(long userId, String token);
+
+    Token getVerificationToken(String verificationToken);
+
+    Token generateNewVerificationToken(String existingToken);
+
+    Token createPasswordResetToken(User user);
+
+    void validatePasswordResetToken(long userId, String token);
+
+    void validateOldPassword(long id, String oldPassword);
+
+    void changeUserPassword(long id, String password);
+
 }
