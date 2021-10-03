@@ -2,6 +2,7 @@ package com.example.springsecurityregistration.web.dto;
 
 import com.example.springsecurityregistration.web.validator.PasswordMatches;
 import com.example.springsecurityregistration.web.validator.ValidEmail;
+import com.example.springsecurityregistration.web.validator.ValidPassword;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -17,9 +18,13 @@ public class UserDto {
     @Size(min = 2, max = 35)
     private String lastName;
 
+    @ValidPassword
     @NotBlank
-    @Size(min = 8, max = 70)
+    @Size(min = 8, max = 30)
     private String password;
+
+    @NotBlank
+    @Size(min = 8, max = 30)
     private String matchingPassword;
 
     @ValidEmail

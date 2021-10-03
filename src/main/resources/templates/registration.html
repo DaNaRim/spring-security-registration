@@ -26,37 +26,77 @@
 
 
 <script src="jquery.min.js"></script>
-<script type="text/javascript">
-    var serverContext = [[@{/}]];
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // var serverContext = [[@{/}]];
 
-        function register() {
-            $(".alert").html("").hide();
-            var formData = $('form').serialize();
-            $.post(serverContext + "/user/registration", formData, function (data) {
-                if (data.message == "success") {
-                    window.location.href = serverContext + "/successRegister.html";
+        $(document).ready(function () {
+            $('form').submit(function (event) {
+                register(event);
+            });
+
+            $(":password").keyup(function () {
+                if ($("#password").val() !== $("#matchPassword").val()) {
+                    $("#globalError").show().html('<spring:message code="error.passwordMatches"/>');
+                } else {
+                    $("#globalError").html("").hide();
                 }
-            })
-                .fail(function (data) {
-                    if (data.responseJSON.error.indexOf("MailError") > -1) {
-                        window.location.href = serverContext + "/emailError.html";
-                    } else if (data.responseJSON.error.indexOf("InternalError") > -1) {
-                        window.location.href = serverContext +
-                            "/login.html?message=" + data.responseJSON.message;
-                    } else if (data.responseJSON.error == "UserAlreadyExist") {
-                        $("#emailError").show().html(data.responseJSON.message);
-                    } else {
-                        var errors = $.parseJSON(data.responseJSON.message);
-                        $.each(errors, function (index, item) {
-                            $("#" + item.field + "Error").show().html(item.defaultMessage);
-                        });
-                        errors = $.parseJSON(data.responseJSON.error);
-                        $.each(errors, function (index, item) {
-                            $("#globalError").show().append(item.defaultMessage + "<br>");
-                        });
+            });
+
+            options = {
+                common: {minChar: 8},
+                ui: {
+                    showVerdictsInsideProgressBar: true,
+                    showErrors: true,
+                    errorMessages: {
+                        wordLength: '<spring:message code="error.wordLength"/>',
+                        wordNotEmail: '<spring:message code="error.wordNotEmail"/>',
+                        wordSequences: '<spring:message code="error.wordSequences"/>',
+                        wordLowercase: '<spring:message code="error.wordLowercase"/>',
+                        wordUppercase: '<spring:message code="error.wordUppercase"/>',
+                        wordOneNumber: '<spring:message code="error.wordOneNumber"/>',
+                        wordOneSpecialChar: '<spring:message code="error.wordOneSpecialChar"/>'
                     }
-                })
+                }
+            };
+            $('#password').pwstrength(options);
+        });
+
+    function register(event) {
+        event.preventDefault();
+        $(".alert").html("").hide();
+        $(".error-list").html("");
+        if ($("#password").val() !== $("#matchPassword").val()) {
+            $("#globalError").show().html('<spring:message code="error.passwordMatches"/>');
+            return;
         }
+        var formData = $('form').serialize();
+        $.post(serverContext + "user/registration", formData, function (data) {
+            if (data.message === "success") {
+                window.location.href = serverContext + "successRegister.html";
+            }
+
+        })
+            .fail(function (data) {
+                if (data.responseJSON.error.indexOf("MailError") > -1) {
+                    window.location.href = serverContext + "emailError.html";
+                } else if (data.responseJSON.error === "UserAlreadyExist") {
+                    $("#emailError").show().html(data.responseJSON.message);
+                } else if (data.responseJSON.error.indexOf("InternalError") > -1) {
+                    window.location.href = serverContext + "login?message=" + data.responseJSON.message;
+                } else {
+                    var errors = $.parseJSON(data.responseJSON.message);
+                    $.each(errors, function (index, item) {
+                        $("#" + item.field + "Error").show().html(item.defaultMessage);
+                    });
+                    errors = $.parseJSON(data.responseJSON.error);
+                    $.each(errors, function (index, item) {
+                        $("#globalError").show().append(item.defaultMessage + "<br/>");
+                    });
+                }
+            });
+    }
+    /*]]>*/
 </script>
 </body>
 </html>
