@@ -8,7 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @PasswordMatches
-public class UserDto {
+public class RegistrationDto {
 
     @NotBlank
     @Size(min = 2, max = 35)
@@ -24,12 +24,11 @@ public class UserDto {
     private String password;
 
     @NotBlank
-    @Size(min = 8, max = 30)
     private String matchingPassword;
 
     @ValidEmail
     @NotBlank
-    private String email; //max 62
+    private String email;
 
     public String getFirstName() {
         return firstName;

@@ -3,35 +3,17 @@ package com.example.springsecurityregistration.event;
 import com.example.springsecurityregistration.persistence.model.User;
 import org.springframework.context.ApplicationEvent;
 
-import java.util.Locale;
+import javax.servlet.http.HttpServletRequest;
 
 public class OnRegistrationCompleteEvent extends ApplicationEvent {
 
-    private String appUrl;
-    private Locale locale;
     private User user;
+    private HttpServletRequest request;
 
-    public OnRegistrationCompleteEvent(User user, Locale locale, String appUrl) {
+    public OnRegistrationCompleteEvent(User user, HttpServletRequest request) {
         super(user);
         this.user = user;
-        this.locale = locale;
-        this.appUrl = appUrl;
-    }
-
-    public String getAppUrl() {
-        return appUrl;
-    }
-
-    public void setAppUrl(String appUrl) {
-        this.appUrl = appUrl;
-    }
-
-    public Locale getLocale() {
-        return locale;
-    }
-
-    public void setLocale(Locale locale) {
-        this.locale = locale;
+        this.request = request;
     }
 
     public User getUser() {
@@ -40,5 +22,13 @@ public class OnRegistrationCompleteEvent extends ApplicationEvent {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
     }
 }

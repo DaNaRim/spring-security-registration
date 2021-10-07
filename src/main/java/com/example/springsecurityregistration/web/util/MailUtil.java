@@ -1,7 +1,5 @@
 package com.example.springsecurityregistration.web.util;
 
-import com.example.springsecurityregistration.persistence.model.Token;
-import com.example.springsecurityregistration.persistence.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
@@ -28,38 +26,30 @@ public class MailUtil {
 
     public void sendVerificationTokenEmail(String contextPath,
                                            Locale locale,
-                                           Token token,
-                                           User user) {
+                                           String token,
+                                           String userEmail) {
 
-        String url = String.format("%s/registrationConfirm.html?token=%s", contextPath, token.getToken());
-        String message = messages.getMessage("message.resendToken", null, locale);
-        mailSender.send(constructEmail("Resend Registration Token", message + "\r\n" + url, user));
+        String url = String.format("%s/registrationConfirm.html?token=%s", contextPath, token);
+        String message = messages.getMessage("message.enableAccount", null, locale);
+        mailSender.send(constructEmail("Enable Account",
+                message + "\r\n" + url, userEmail));
     }
 
     public void sendResetPasswordTokenEmail(String contextPath,
                                             Locale locale,
                                             String token,
-                                            User user) {
+                                            String userEmail) {
 
-        String url = String.format("%s/user/changePassword?id=%d&token=%s", contextPath, user.getId(), token);
+        String url = String.format("%s/user/changePassword?token=%s", contextPath, token);
         String message = messages.getMessage("message.resetPassword", null, locale);
-        mailSender.send(constructEmail("Reset Password", message + "\r\n" + url, user));
+        mailSender.send(constructEmail("Reset Password", message + "\r\n" + url, userEmail));
     }
 
-    public void constructAndSendEmail(String subject, String body, User user) {
+    private SimpleMailMessage constructEmail(String subject, String body, String userEmail) {
         SimpleMailMessage email = new SimpleMailMessage();
         email.setSubject(subject);
         email.setText(body);
-        email.setTo(user.getEmail());
-        email.setFrom(Objects.requireNonNull(environment.getProperty("support.email")));
-        mailSender.send(email);
-    }
-
-    private SimpleMailMessage constructEmail(String subject, String body, User user) {
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setSubject(subject);
-        email.setText(body);
-        email.setTo(user.getEmail());
+        email.setTo(userEmail);
         email.setFrom(Objects.requireNonNull(environment.getProperty("support.email")));
         return email;
     }

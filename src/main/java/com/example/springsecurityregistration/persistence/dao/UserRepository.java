@@ -13,14 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query(value = "SELECT * FROM users"
-            + " WHERE id = ("
-            + "    SELECT user_id "
-            + "      FROM token "
-            + "     WHERE token = :token)",
-            nativeQuery = true)
-    User findUserByToken(@Param("token") String token);
-
     @Query(value = "SELECT password FROM users WHERE id = :id",
             nativeQuery = true)
     String getPasswordById(@Param("id") long id);

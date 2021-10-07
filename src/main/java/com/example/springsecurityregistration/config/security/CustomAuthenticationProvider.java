@@ -17,8 +17,8 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
 
-        final User user = userRepository.findByEmail(auth.getName());
-        if ((user == null)) {
+        User user = userRepository.findByEmail(auth.getName());
+        if (user == null) {
             throw new BadCredentialsException("Invalid username or password");
         }
 
@@ -30,18 +30,18 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider {
             }
 
         }*/
-        final Authentication result = super.authenticate(auth);
+        Authentication result = super.authenticate(auth);
         return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
     }
 
-    private boolean isValidLong(String code) {
-        try {
-            Long.parseLong(code);
-        } catch (final NumberFormatException e) {
-            return false;
-        }
-        return true;
-    }
+//    private boolean isValidLong(String code) {
+//        try {
+//            Long.parseLong(code);
+//        } catch (final NumberFormatException e) {
+//            return false;
+//        }
+//        return true;
+//    }
 
     @Override
     public boolean supports(Class<?> authentication) {

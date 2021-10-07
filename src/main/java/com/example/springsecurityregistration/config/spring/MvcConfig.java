@@ -33,9 +33,4 @@ public class MvcConfig implements WebMvcConfigurer {
         return new ValidPasswordValidator();
     }
 
-//    @Bean
-//    public EntityManagerFactory entityManagerFactory() {
-//        return new SessionFactoryImpl();
-//    }
-
 }
