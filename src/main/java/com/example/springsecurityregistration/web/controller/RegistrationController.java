@@ -25,7 +25,7 @@ import javax.validation.Valid;
 import java.util.Locale;
 
 @Controller
-public class UserController {
+public class RegistrationController {
 
     private final UserService userService;
     private final TokenService tokenService;
@@ -34,11 +34,11 @@ public class UserController {
     private final MessageSource messages;
 
     @Autowired
-    public UserController(UserService userService,
-                          TokenService tokenService,
-                          TokenEmailFacade tokenEmailFacade,
-                          ApplicationEventPublisher eventPublisher,
-                          MessageSource messages) {
+    public RegistrationController(UserService userService,
+                                  TokenService tokenService,
+                                  TokenEmailFacade tokenEmailFacade,
+                                  ApplicationEventPublisher eventPublisher,
+                                  MessageSource messages) {
         this.userService = userService;
         this.tokenService = tokenService;
         this.tokenEmailFacade = tokenEmailFacade;
