@@ -19,27 +19,22 @@ public class PasswordMatchesValidator implements ConstraintValidator<PasswordMat
 
     @Override
     public boolean isValid(Object obj, ConstraintValidatorContext context) {
-        try {
+
+        if (obj instanceof RegistrationDto) {
             RegistrationDto user = (RegistrationDto) obj;
             return user.getPassword().equals(user.getMatchingPassword());
-        } catch (ClassCastException e) {
-            logger.trace("obj param is not RegistrationDto type");
-        }
 
-        try {
+        } else if (obj instanceof UpdatePasswordDto) {
             UpdatePasswordDto password = (UpdatePasswordDto) obj;
             return password.getNewPassword().equals(password.getMatchingPassword());
-        } catch (ClassCastException e) {
-            logger.trace("obj param is not PasswordDto type");
-        }
 
-        try {
+        } else if (obj instanceof ForgotPasswordDto) {
             ForgotPasswordDto password = (ForgotPasswordDto) obj;
             return password.getNewPassword().equals(password.getMatchingPassword());
-        } catch (ClassCastException e) {
-            logger.trace("obj param is not ForgottenPasswordDto type");
-        }
 
-        throw new RuntimeException("obj is not a valid type");
+        } else {
+            logger.error("obj is not a valid type");
+            throw new RuntimeException("obj is not a valid type");
+        }
     }
 }
