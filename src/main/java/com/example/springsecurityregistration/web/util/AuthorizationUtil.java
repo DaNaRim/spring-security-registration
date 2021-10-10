@@ -17,14 +17,4 @@ public class AuthorizationUtil {
         }
     }
 
-    public static String getUserEmail() {
-        Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (user instanceof User) {
-            User user1 = (User) user;
-            return user1.getEmail();
-        } else {
-            throw new UnauthorizedException("Can`t get email because user unauthorized");
-        }
-    }
 }
