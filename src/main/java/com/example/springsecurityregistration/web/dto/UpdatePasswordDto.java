@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @PasswordMatches
-public class UpdatePasswordDto {
+public class UpdatePasswordDto extends PasswordEntity {
 
     @NotBlank
     private String oldPassword;
@@ -19,6 +19,16 @@ public class UpdatePasswordDto {
 
     @NotBlank
     private String matchingPassword;
+
+    @Override
+    public String getPassword() {
+        return newPassword;
+    }
+
+    @Override
+    public String getMatchingPassword() {
+        return matchingPassword;
+    }
 
     public String getOldPassword() {
         return oldPassword;
@@ -34,10 +44,6 @@ public class UpdatePasswordDto {
 
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
-    }
-
-    public String getMatchingPassword() {
-        return matchingPassword;
     }
 
     public void setMatchingPassword(String matchingPassword) {

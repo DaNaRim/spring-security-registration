@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @PasswordMatches
-public class ForgotPasswordDto {
+public class ForgotPasswordDto extends PasswordEntity {
 
     @ValidPassword
     @NotBlank
@@ -20,16 +20,22 @@ public class ForgotPasswordDto {
     @NotBlank
     private String token;
 
+    @Override
+    public String getPassword() {
+        return newPassword;
+    }
+
+    @Override
+    public String getMatchingPassword() {
+        return matchingPassword;
+    }
+
     public String getNewPassword() {
         return newPassword;
     }
 
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
-    }
-
-    public String getMatchingPassword() {
-        return matchingPassword;
     }
 
     public void setMatchingPassword(String matchingPassword) {

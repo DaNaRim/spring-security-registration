@@ -8,7 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @PasswordMatches
-public class RegistrationDto {
+public class RegistrationDto extends PasswordEntity {
 
     @NotBlank
     @Size(min = 2, max = 35)
@@ -30,6 +30,16 @@ public class RegistrationDto {
     @NotBlank
     private String email;
 
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getMatchingPassword() {
+        return matchingPassword;
+    }
+
     public String getFirstName() {
         return firstName;
     }
@@ -46,16 +56,8 @@ public class RegistrationDto {
         this.lastName = lastName;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getMatchingPassword() {
-        return matchingPassword;
     }
 
     public void setMatchingPassword(String matchingPassword) {
