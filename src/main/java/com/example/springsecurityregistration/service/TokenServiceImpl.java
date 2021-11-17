@@ -1,8 +1,8 @@
 package com.example.springsecurityregistration.service;
 
-import com.example.springsecurityregistration.error.InvalidTokenException;
-import com.example.springsecurityregistration.persistence.dao.TokenRepository;
-import com.example.springsecurityregistration.persistence.dao.UserRepository;
+import com.example.springsecurityregistration.web.error.InvalidTokenException;
+import com.example.springsecurityregistration.persistence.dao.TokenDao;
+import com.example.springsecurityregistration.persistence.dao.UserDao;
 import com.example.springsecurityregistration.persistence.model.Token;
 import com.example.springsecurityregistration.persistence.model.TokenType;
 import com.example.springsecurityregistration.persistence.model.User;
@@ -20,13 +20,13 @@ import java.util.Collection;
 @Transactional
 public class TokenServiceImpl implements TokenService {
 
-    private final TokenRepository tokenRepository;
-    private final UserRepository userRepository;
+    private final TokenDao tokenDao;
+    private final UserDao userDao;
 
     @Autowired
-    public TokenServiceImpl(TokenRepository tokenRepository, UserRepository userRepository) {
-        this.tokenRepository = tokenRepository;
-        this.userRepository = userRepository;
+    public TokenServiceImpl(TokenDao tokenDao, UserDao userDao) {
+        this.tokenDao = tokenDao;
+        this.userDao = userDao;
     }
 
     /*
@@ -35,12 +35,12 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public Token createVerificationToken(User user) {
-        return tokenRepository.save(new Token(user, TokenType.VERIFICATION));
+        return tokenDao.save(new Token(user, TokenType.VERIFICATION));
     }
 
     @Override
-    public void validateVerificationToken(long userId, String token) {
-        Token verificationToken = getVerificationToken(token);
+    public Token validateVerificationToken(String token) {
+        Token verificationToken = tokenDao.findByToken(token);
 
         if (verificationToken == null) {
             throw new InvalidTokenException("invalidToken");
@@ -48,24 +48,15 @@ public class TokenServiceImpl implements TokenService {
         } else if (verificationToken.isExpired()) {
             throw new InvalidTokenException("tokenExpired");
 
-        } else if (verificationToken.getUser().getId() != userId) {
-            throw new InvalidTokenException("tokenForAnotherUser");
-
         } else if (verificationToken.getUser().isEnabled()) {
             throw new InvalidTokenException("userAlreadyEnable");
         }
+        return verificationToken;
     }
 
     @Override
     public Token getVerificationToken(String verificationToken) {
-        return tokenRepository.findByToken(verificationToken);
-    }
-
-    @Override
-    public Token generateNewVerificationToken(String existingToken) {
-        Token token = tokenRepository.findByToken(existingToken);
-        token.updateToken(); //TODO check update in db
-        return token;
+        return tokenDao.findByToken(verificationToken);
     }
 
     /*
@@ -74,18 +65,15 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public Token createPasswordResetToken(User user) {
-        return tokenRepository.save(new Token(user, TokenType.PASSWORD_RESET));
+        return tokenDao.save(new Token(user, TokenType.PASSWORD_RESET));
     }
 
     @Override
-    public void validatePasswordResetToken(long userId, String token) {
-        Token passToken = tokenRepository.findByToken(token);
+    public Token validatePasswordResetToken(String token) {
+        Token passToken = tokenDao.findByToken(token);
 
         if (passToken == null) {
             throw new InvalidTokenException("invalidToken");
-
-        } else if (passToken.getUser().getId() != userId) {
-            throw new InvalidTokenException("tokenForAnotherUser");
 
         } else if (passToken.isExpired()) {
             throw new InvalidTokenException("tokenExpired");
@@ -93,10 +81,11 @@ public class TokenServiceImpl implements TokenService {
 
         User user = passToken.getUser();
         Collection<GrantedAuthority> authorities =
-                (Collection<GrantedAuthority>) userRepository.findByEmail(user.getEmail()).getAuthorities();
+                (Collection<GrantedAuthority>) userDao.findByEmail(user.getEmail()).getAuthorities();
         //TODO sipmify
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                user, null, authorities);
+        Authentication auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(auth);
+
+        return passToken;
     }
 }

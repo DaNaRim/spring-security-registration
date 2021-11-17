@@ -1,6 +1,6 @@
 package com.example.springsecurityregistration.web.util;
 
-import com.example.springsecurityregistration.error.UnauthorizedException;
+import com.example.springsecurityregistration.web.error.UnauthorizedException;
 import com.example.springsecurityregistration.persistence.model.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 

@@ -24,13 +24,13 @@ public class MailUtil {
         this.mailSender = mailSender;
     }
 
-    public void sendVerificationTokenEmail(String contextPath,
+    public void sendVerificationTokenEmail(String contextPath, //TODO locale in links
                                            Locale locale,
                                            String token,
                                            String userEmail) {
 
-        String url = String.format("%s/registrationConfirm.html?token=%s", contextPath, token);
-        String message = messages.getMessage("message.enableAccount", null, locale);
+        String url = String.format("%s/registrationConfirm?token=%s", contextPath, token);
+        String message = messages.getMessage("message.email.enableAccount", null, locale);
         mailSender.send(constructEmail("Enable Account",
                 message + "\r\n" + url, userEmail));
     }
@@ -40,8 +40,8 @@ public class MailUtil {
                                             String token,
                                             String userEmail) {
 
-        String url = String.format("%s/user/changePassword?token=%s", contextPath, token);
-        String message = messages.getMessage("message.resetPassword", null, locale);
+        String url = String.format("%s/updateForgottenPassword?token=%s", contextPath, token);
+        String message = messages.getMessage("message.email.resetPassword", null, locale);
         mailSender.send(constructEmail("Reset Password", message + "\r\n" + url, userEmail));
     }
 
@@ -50,7 +50,7 @@ public class MailUtil {
         email.setSubject(subject);
         email.setText(body);
         email.setTo(userEmail);
-        email.setFrom(Objects.requireNonNull(environment.getProperty("support.email")));
+        email.setFrom(Objects.requireNonNull(environment.getProperty("spring.mail.username")));
         return email;
     }
 }

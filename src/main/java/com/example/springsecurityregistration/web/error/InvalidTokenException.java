@@ -1,4 +1,4 @@
-package com.example.springsecurityregistration.error;
+package com.example.springsecurityregistration.web.error;
 
 public class InvalidTokenException extends RuntimeException {
 

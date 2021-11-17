@@ -9,12 +9,12 @@ public interface UserService {
 
     User registerNewUserAccount(RegistrationDto registrationDto);
 
-    void enableUser(long userId, String token);
+    void enableUser(String token);
 
     User findUserByEmail(String email);
 
-    void changeUserPassword(long userId, UpdatePasswordDto passwordDto);
+    void changeForgottenPassword(ForgotPasswordDto passwordDto);
 
-    void changeForgottenPassword(long userId, ForgotPasswordDto passwordDto);
+    void changeUserPassword(long userId, UpdatePasswordDto passwordDto);
 
 }

@@ -27,9 +27,9 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
     }
 
     @Override
-    public void onAuthenticationFailure(final HttpServletRequest request,
-                                        final HttpServletResponse response,
-                                        final AuthenticationException exception) throws IOException, ServletException {
+    public void onAuthenticationFailure(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        AuthenticationException exception) throws IOException, ServletException {
 
         setDefaultFailureUrl("/login?error=true");
 

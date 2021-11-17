@@ -1,4 +1,4 @@
-package com.example.springsecurityregistration.event;
+package com.example.springsecurityregistration.service.event;
 
 import com.example.springsecurityregistration.persistence.model.User;
 import org.springframework.context.ApplicationEvent;

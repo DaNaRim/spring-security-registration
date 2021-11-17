@@ -12,16 +12,16 @@ public class GenericResponse {
     private String message;
     private String error;
 
-    public GenericResponse(final String message) {
+    public GenericResponse(String message) {
         this.message = message;
     }
 
-    public GenericResponse(final String message, final String error) {
+    public GenericResponse(String message, String error) {
         this.message = message;
         this.error = error;
     }
 
-    public GenericResponse(final List<FieldError> fieldErrors, final List<ObjectError> globalErrors) {
+    public GenericResponse(List<FieldError> fieldErrors, List<ObjectError> globalErrors) {
         final ObjectMapper mapper = new ObjectMapper();
         try {
             this.message = mapper.writeValueAsString(fieldErrors);

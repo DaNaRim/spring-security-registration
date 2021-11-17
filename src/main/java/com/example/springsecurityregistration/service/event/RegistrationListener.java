@@ -1,4 +1,4 @@
-package com.example.springsecurityregistration.event;
+package com.example.springsecurityregistration.service.event;
 
 import com.example.springsecurityregistration.service.TokenEmailFacade;
 import org.springframework.beans.factory.annotation.Autowired;

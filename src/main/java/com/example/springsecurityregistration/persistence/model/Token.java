@@ -36,17 +36,8 @@ public class Token {
         this.expiryDate = calculateExpiryDate();
     }
 
-    public void updateToken() {
-        this.token = UUID.randomUUID().toString();
-        this.expiryDate = calculateExpiryDate();
-    }
-
     public boolean isExpired() {
         return this.getExpiryDate().before(Calendar.getInstance().getTime());
-    }
-
-    public void setNewExpiryDate() {
-        this.expiryDate = calculateExpiryDate();
     }
 
     private Date calculateExpiryDate() {

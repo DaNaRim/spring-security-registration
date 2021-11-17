@@ -1,12 +1,13 @@
 package com.example.springsecurityregistration.service;
 
-import com.example.springsecurityregistration.error.InvalidOldPasswordException;
-import com.example.springsecurityregistration.error.UserAlreadyExistException;
-import com.example.springsecurityregistration.persistence.dao.UserRepository;
+import com.example.springsecurityregistration.persistence.dao.UserDao;
+import com.example.springsecurityregistration.persistence.model.Token;
 import com.example.springsecurityregistration.persistence.model.User;
 import com.example.springsecurityregistration.web.dto.ForgotPasswordDto;
 import com.example.springsecurityregistration.web.dto.RegistrationDto;
 import com.example.springsecurityregistration.web.dto.UpdatePasswordDto;
+import com.example.springsecurityregistration.web.error.InvalidOldPasswordException;
+import com.example.springsecurityregistration.web.error.UserAlreadyExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,15 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final UserDao userDao;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository,
+    public UserServiceImpl(UserDao userDao,
                            TokenService tokenService,
                            PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+        this.userDao = userDao;
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -32,46 +33,44 @@ public class UserServiceImpl implements UserService {
     @Override
     public User registerNewUserAccount(RegistrationDto registrationDto) {
 
-        if (userRepository.existsByEmail(registrationDto.getEmail())) {
-            throw new UserAlreadyExistException("There is an account with that email address: " + registrationDto.getEmail());
+        if (userDao.existsByEmail(registrationDto.getEmail())) {
+            throw new UserAlreadyExistException("email is busy: " + registrationDto.getEmail());
         }
 
         User user = new User(
                 registrationDto.getFirstName(),
                 registrationDto.getLastName(),
-                passwordEncoder.encode(registrationDto.getPassword()),
-                registrationDto.getEmail());
+                registrationDto.getEmail(),
+                passwordEncoder.encode(registrationDto.getPassword()));
 
-        return userRepository.save(user);
+        return userDao.save(user);
     }
 
     @Override
-    public void enableUser(long userId, String token) {
-        tokenService.validateVerificationToken(userId, token);
-        userRepository.updateIsEnable(userId);
+    public void enableUser(String token) {
+        Token verificationToken = tokenService.validateVerificationToken(token);
+        User user = verificationToken.getUser();
+        user.setEnabled(true);
     }
 
     @Override
     public User findUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userDao.findByEmail(email);
     }
 
     @Override
     public void changeUserPassword(long userId, UpdatePasswordDto passwordDto) {
-        validateOldPassword(userId, passwordDto.getOldPassword());
-        userRepository.updatePassword(userId, passwordEncoder.encode(passwordDto.getNewPassword()));
+        if (!passwordEncoder.matches(passwordDto.getOldPassword(), userDao.getPasswordById(userId))) {
+            throw new InvalidOldPasswordException("Invalid old password");
+        }
+        User user = userDao.getById(userId);
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
     }
 
     @Override
-    public void changeForgottenPassword(long userId, ForgotPasswordDto passwordDto) {
-        tokenService.validatePasswordResetToken(userId, passwordDto.getToken());
-        userRepository.updatePassword(userId, passwordEncoder.encode(passwordDto.getNewPassword()));
+    public void changeForgottenPassword(ForgotPasswordDto passwordDto) {
+        Token token = tokenService.validatePasswordResetToken(passwordDto.getToken());
+        User user = token.getUser();
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
     }
-
-    private void validateOldPassword(long id, String oldPassword) {
-        if (!oldPassword.equals(userRepository.getPasswordById(id))) {
-            throw new InvalidOldPasswordException("password Invalid");
-        }
-    }
-
 }

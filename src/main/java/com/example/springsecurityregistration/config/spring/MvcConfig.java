@@ -4,9 +4,11 @@ import com.example.springsecurityregistration.web.validator.PasswordMatchesValid
 import com.example.springsecurityregistration.web.validator.ValidEmailValidator;
 import com.example.springsecurityregistration.web.validator.ValidPasswordValidator;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
@@ -28,6 +30,16 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addViewController("/updatePassword");
         registry.addViewController("/forgotPassword");
         registry.addViewController("/updateForgottenPassword");
+    }
+
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasenames(
+                "classpath:/messages/uk_UA"
+        );
+        messageSource.setDefaultEncoding("UTF-8");
+        return messageSource;
     }
 
     @Bean

@@ -15,10 +15,19 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String firstName;
+
+    @Column(nullable = false)
     private String lastName;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(nullable = false)
     private String password;
-    private String email; //max 62
+
+    private boolean enabled;
 
     @ManyToMany
     @JoinTable(name = "users_roles",
@@ -26,17 +35,14 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private List<Role> roles;
 
-    private boolean enabled;
-
     public User() {
     }
 
-    public User(String firstName, String lastName, String password, String email) {
+    public User(String firstName, String lastName, String email, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.password = password;
         this.email = email;
-//        this.roles = roles;
+        this.password = password;
         this.enabled = false;
     }
 

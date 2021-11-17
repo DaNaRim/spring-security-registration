@@ -2,6 +2,7 @@ package com.example.springsecurityregistration.service;
 
 import com.example.springsecurityregistration.persistence.model.Token;
 import com.example.springsecurityregistration.persistence.model.User;
+import com.example.springsecurityregistration.web.error.InvalidTokenException;
 import com.example.springsecurityregistration.web.util.MailUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,19 +38,32 @@ public class TokenEmailFacadeImpl implements TokenEmailFacade {
                 user.getEmail());
     }
 
+    @Override
     public void updateAndSendVerificationToken(String existingToken, HttpServletRequest request) {
-        Token newToken = tokenService.generateNewVerificationToken(existingToken);
+        Token token = tokenService.getVerificationToken(existingToken);
+
+        if (token == null) {
+            throw new InvalidTokenException("invalidToken");
+        }
+        User user = token.getUser();
+
+        if (user.isEnabled()) {
+            throw new InvalidTokenException("userAlreadyEnable");
+        }
+        Token newToken = tokenService.createVerificationToken(user);
+
         mailUtil.sendVerificationTokenEmail(
                 getAppUrl(request),
                 request.getLocale(),
                 newToken.getToken(),
-                newToken.getUser().getEmail());
+                user.getEmail());
     }
 
     @Override
     public void createAndSendPasswordResetToken(String userEmail, HttpServletRequest request) {
         User user = userService.findUserByEmail(userEmail);
         Token token = tokenService.createPasswordResetToken(user);
+
         mailUtil.sendResetPasswordTokenEmail(
                 getAppUrl(request),
                 request.getLocale(),

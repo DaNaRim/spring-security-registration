@@ -1,7 +1,9 @@
 package com.example.springsecurityregistration.web.failHandler;
 
-import com.example.springsecurityregistration.error.UserAlreadyExistException;
-import com.example.springsecurityregistration.error.UserNotFoundException;
+import com.example.springsecurityregistration.web.error.InvalidTokenException;
+import com.example.springsecurityregistration.web.error.UnauthorizedException;
+import com.example.springsecurityregistration.web.error.UserAlreadyExistException;
+import com.example.springsecurityregistration.web.error.UserNotFoundException;
 import com.example.springsecurityregistration.web.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -27,49 +29,69 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleBindException(BindException ex,
+    protected ResponseEntity<Object> handleBindException(BindException e,
                                                          HttpHeaders headers,
                                                          HttpStatus status,
                                                          WebRequest request) {
-        BindingResult result = ex.getBindingResult();
+        BindingResult result = e.getBindingResult();
         GenericResponse bodyOfResponse = new GenericResponse(result.getFieldErrors(), result.getGlobalErrors());
-        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+        return handleExceptionInternal(e, bodyOfResponse, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({InvalidTokenException.class})
+    public ResponseEntity<Object> handleToken(RuntimeException e, WebRequest request) {
+        logger.warn("HTTP 400: InvalidToken " + e.getMessage());
+
+        GenericResponse responseBody = new GenericResponse(
+                messages.getMessage("error.token." + e.getMessage(), null, request.getLocale()));
+
+        return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({UnauthorizedException.class})
+    public ResponseEntity<Object> handleUnauthorized(RuntimeException e, WebRequest request) {
+        logger.warn("HTTP 401: InvalidToken " + e.getMessage());
+
+        GenericResponse responseBody = new GenericResponse(
+                messages.getMessage("error.user.unauthorized", null, request.getLocale()));
+
+        return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
     @ExceptionHandler({UserNotFoundException.class})
-    public ResponseEntity<Object> handleUserNotFound(RuntimeException ex, WebRequest request) {
-        logger.warn("404 Status Code", ex);
+    public ResponseEntity<Object> handleUserNotFound(RuntimeException e, WebRequest request) {
+        logger.warn("HTTP 404: UserNotFound " + e.getMessage());
         GenericResponse responseBody = new GenericResponse(
-                messages.getMessage("message.userNotFound", null, request.getLocale()), "UserNotFound");
+                messages.getMessage("error.user.notFound", null, request.getLocale()), "UserNotFound");
 
-        return handleExceptionInternal(ex, responseBody, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+        return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
     @ExceptionHandler({UserAlreadyExistException.class})
-    public ResponseEntity<Object> handleUserAlreadyExist(RuntimeException ex, WebRequest request) {
-        logger.warn("409 Status Code", ex);
+    public ResponseEntity<Object> handleUserAlreadyExist(RuntimeException e, WebRequest request) {
+        logger.warn("HTTP 409: UserAlreadyExist " + e.getMessage());
         GenericResponse bodyOfResponse = new GenericResponse(
-                messages.getMessage("message.regError", null, request.getLocale()), "UserAlreadyExist");
+                messages.getMessage("error.busyEmail", null, request.getLocale()), "UserAlreadyExist");
 
-        return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
+        return handleExceptionInternal(e, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
     }
 
     @ExceptionHandler({MailAuthenticationException.class})
-    public ResponseEntity<Object> handleMail(RuntimeException ex, WebRequest request) {
-        logger.error("500 Status Code", ex);
+    public ResponseEntity<Object> handleMail(RuntimeException e, WebRequest request) {
+        logger.error("HTTP 500: MailAuthenticationException " + e.getMessage());
         GenericResponse responseBody = new GenericResponse(
-                messages.getMessage("message.email.config.error", null, request.getLocale()), "MailError");
+                messages.getMessage("error.email.config.error", null, request.getLocale()), "MailError");
 
-        return handleExceptionInternal(ex, responseBody, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+        return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
     @ExceptionHandler({Exception.class})
-    public ResponseEntity<Object> handleInternal(RuntimeException ex, WebRequest request) {
-        logger.error("500 Status Code", ex);
+    public ResponseEntity<Object> handleInternal(RuntimeException e, WebRequest request) {
+        logger.error("HTTP 500: Internal server error ", e);
         GenericResponse responseBody = new GenericResponse(
-                messages.getMessage("message.error", null, request.getLocale()), "InternalError");
+                messages.getMessage("error.internalServer", null, request.getLocale()), "InternalServerError");
 
-        return handleExceptionInternal(ex, responseBody, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+        return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
 }
