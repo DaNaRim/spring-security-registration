@@ -8,7 +8,7 @@ public interface TokenEmailFacade {
 
     void createAndSendVerificationToken(User user, HttpServletRequest request);
 
-    void updateAndSendVerificationToken(String existingToken, HttpServletRequest request);
+    void updateAndSendVerificationToken(String userEmail, HttpServletRequest request);
 
     void createAndSendPasswordResetToken(String userEmail, HttpServletRequest request);
 }

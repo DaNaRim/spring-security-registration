@@ -66,12 +66,12 @@ public class RegistrationController {
     }
 
     @GetMapping("/resendRegistrationToken")
-    public String resendRegistrationToken(@RequestParam("token") String existingToken, //TODO token from web and from email
+    public String resendRegistrationToken(@RequestParam("email") String userEmail,
                                           HttpServletRequest request,
                                           Locale locale,
                                           Model model) {
 
-        tokenEmailFacade.updateAndSendVerificationToken(existingToken, request);
+        tokenEmailFacade.updateAndSendVerificationToken(userEmail, request);
 
         model.addAttribute("message", messages.getMessage("message.TokenResent", null, locale));
         return "redirect:/login?lang=" + locale.getLanguage();

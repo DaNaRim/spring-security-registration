@@ -39,24 +39,19 @@ public class TokenEmailFacadeImpl implements TokenEmailFacade {
     }
 
     @Override
-    public void updateAndSendVerificationToken(String existingToken, HttpServletRequest request) {
-        Token token = tokenService.getVerificationToken(existingToken);
-
-        if (token == null) {
-            throw new InvalidTokenException("invalidToken");
-        }
-        User user = token.getUser();
+    public void updateAndSendVerificationToken(String userEmail, HttpServletRequest request) {
+        User user = userService.findUserByEmail(userEmail);
 
         if (user.isEnabled()) {
             throw new InvalidTokenException("userAlreadyEnable");
         }
-        Token newToken = tokenService.createVerificationToken(user);
+        Token token = tokenService.createVerificationToken(user);
 
         mailUtil.sendVerificationTokenEmail(
                 getAppUrl(request),
                 request.getLocale(),
-                newToken.getToken(),
-                user.getEmail());
+                token.getToken(),
+                userEmail);
     }
 
     @Override
