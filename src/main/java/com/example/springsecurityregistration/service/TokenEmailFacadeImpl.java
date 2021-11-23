@@ -40,7 +40,7 @@ public class TokenEmailFacadeImpl implements TokenEmailFacade {
 
     @Override
     public void updateAndSendVerificationToken(String userEmail, HttpServletRequest request) {
-        User user = userService.findUserByEmail(userEmail);
+        User user = userService.findByEmail(userEmail);
 
         if (user.isEnabled()) {
             throw new InvalidTokenException("userAlreadyEnable");
@@ -56,7 +56,7 @@ public class TokenEmailFacadeImpl implements TokenEmailFacade {
 
     @Override
     public void createAndSendPasswordResetToken(String userEmail, HttpServletRequest request) {
-        User user = userService.findUserByEmail(userEmail);
+        User user = userService.findByEmail(userEmail);
         Token token = tokenService.createPasswordResetToken(user);
 
         mailUtil.sendResetPasswordTokenEmail(

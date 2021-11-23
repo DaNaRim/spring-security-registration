@@ -73,7 +73,7 @@ public class RegistrationController {
 
         tokenEmailFacade.updateAndSendVerificationToken(userEmail, request);
 
-        model.addAttribute("message", messages.getMessage("message.TokenResent", null, locale));
+        model.addAttribute("message", messages.getMessage("message.tokenResent", null, locale));
         return "redirect:/login?lang=" + locale.getLanguage();
     }
 
@@ -84,7 +84,7 @@ public class RegistrationController {
 
         tokenEmailFacade.createAndSendPasswordResetToken(userEmail, request);
         return new GenericResponse(
-                messages.getMessage("message.resetPasswordEmail", null, request.getLocale()));
+                messages.getMessage("message.resetPassEmailSent", null, request.getLocale()));
     }
 
     @GetMapping("/changePassword")

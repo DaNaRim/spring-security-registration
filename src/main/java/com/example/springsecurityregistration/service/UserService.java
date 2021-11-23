@@ -11,7 +11,9 @@ public interface UserService {
 
     void enableUser(String token);
 
-    User findUserByEmail(String email);
+    User findById(long id);
+
+    User findByEmail(String email);
 
     void changeForgottenPassword(ForgotPasswordDto passwordDto);
 

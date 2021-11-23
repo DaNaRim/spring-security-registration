@@ -1,9 +1,6 @@
 package com.example.springsecurityregistration.web.failHandler;
 
-import com.example.springsecurityregistration.web.error.InvalidTokenException;
-import com.example.springsecurityregistration.web.error.UnauthorizedException;
-import com.example.springsecurityregistration.web.error.UserAlreadyExistException;
-import com.example.springsecurityregistration.web.error.UserNotFoundException;
+import com.example.springsecurityregistration.web.error.*;
 import com.example.springsecurityregistration.web.util.GenericResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -48,9 +45,29 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 
+    @ExceptionHandler({UserHasRoleException.class})
+    public ResponseEntity<Object> handleHasRole(RuntimeException e, WebRequest request) {
+        logger.warn("HTTP 400: User already has this role " + e.getMessage());
+
+        GenericResponse responseBody = new GenericResponse(
+                messages.getMessage("error.user.alreadyHasRole", null, request.getLocale()));
+
+        return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler({UserHasNotRoleException.class})
+    public ResponseEntity<Object> handleHasNotRole(RuntimeException e, WebRequest request) {
+        logger.warn("HTTP 400: User has not this role " + e.getMessage());
+
+        GenericResponse responseBody = new GenericResponse(
+                messages.getMessage("error.user.HasNotRole", null, request.getLocale()));
+
+        return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    }
+
     @ExceptionHandler({UnauthorizedException.class})
     public ResponseEntity<Object> handleUnauthorized(RuntimeException e, WebRequest request) {
-        logger.warn("HTTP 401: InvalidToken " + e.getMessage());
+        logger.warn("HTTP 401: Unauthorized " + e.getMessage());
 
         GenericResponse responseBody = new GenericResponse(
                 messages.getMessage("error.user.unauthorized", null, request.getLocale()));
@@ -71,7 +88,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleUserAlreadyExist(RuntimeException e, WebRequest request) {
         logger.warn("HTTP 409: UserAlreadyExist " + e.getMessage());
         GenericResponse bodyOfResponse = new GenericResponse(
-                messages.getMessage("error.busyEmail", null, request.getLocale()), "UserAlreadyExist");
+                messages.getMessage("error.user.busyEmail", null, request.getLocale()), "UserAlreadyExist");
 
         return handleExceptionInternal(e, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
     }

@@ -3,7 +3,7 @@ package com.example.springsecurityregistration.persistence.model;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
-import java.util.Collection;
+import java.util.Objects;
 
 @Entity
 public class Role implements GrantedAuthority {
@@ -12,41 +12,32 @@ public class Role implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(mappedBy = "roles")
-    private Collection<User> users;
+    @Column(unique = true, nullable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private RoleName roleName;
 
-//    @ManyToMany
-//    @JoinTable(name = "roles_privileges", joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "privilege_id", referencedColumnName = "id"))
-//    private Collection<Privilege> privileges;
+    public Role() {
+    }
 
-    private String name;
+    public Role(RoleName roleName) {
+        this.roleName = roleName;
+    }
 
     @Override
     public String getAuthority() {
-        return name;
+        return roleName.toString();
     }
 
-    public Long getId() {
-        return id;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return roleName == role.roleName;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Collection<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Collection<User> users) {
-        this.users = users;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public int hashCode() {
+        return Objects.hash(roleName);
     }
 }
