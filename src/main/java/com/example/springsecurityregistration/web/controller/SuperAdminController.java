@@ -19,16 +19,16 @@ public class SuperAdminController {
 
     @PutMapping("/addRole")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void makeAdmin(@RequestParam Long userId,
-                          @RequestParam RoleName roleName) {
+    public void addRole(@RequestParam Long userId,
+                        @RequestParam RoleName roleName) {
 
         roleService.addRoleByUserId(userId, roleName);
     }
 
     @PutMapping("/removeRole")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeAdmin(@RequestParam Long userId,
-                            @RequestParam RoleName roleName) {
+    public void removeRole(@RequestParam Long userId,
+                           @RequestParam RoleName roleName) {
 
         roleService.removeRoleByUserId(userId, roleName);
     }

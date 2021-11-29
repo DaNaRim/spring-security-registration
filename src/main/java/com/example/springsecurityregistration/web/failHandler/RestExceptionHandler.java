@@ -40,7 +40,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         logger.warn("HTTP 400: InvalidToken " + e.getMessage());
 
         GenericResponse responseBody = new GenericResponse(
-                messages.getMessage("error.token." + e.getMessage(), null, request.getLocale()));
+                messages.getMessage("error.token." + e.getMessage(), null, request.getLocale()), "InvalidToken");
 
         return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
@@ -50,7 +50,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         logger.warn("HTTP 400: User already has this role " + e.getMessage());
 
         GenericResponse responseBody = new GenericResponse(
-                messages.getMessage("error.user.alreadyHasRole", null, request.getLocale()));
+                messages.getMessage("error.user.alreadyHasRole", null, request.getLocale()), "UserHasRole");
 
         return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
@@ -60,7 +60,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         logger.warn("HTTP 400: User has not this role " + e.getMessage());
 
         GenericResponse responseBody = new GenericResponse(
-                messages.getMessage("error.user.HasNotRole", null, request.getLocale()));
+                messages.getMessage("error.user.HasNotRole", null, request.getLocale()), "UserHasNotRole");
 
         return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
@@ -70,7 +70,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         logger.warn("HTTP 401: Unauthorized " + e.getMessage());
 
         GenericResponse responseBody = new GenericResponse(
-                messages.getMessage("error.user.unauthorized", null, request.getLocale()));
+                messages.getMessage("error.user.unauthorized", null, request.getLocale()), "Unauthorized");
 
         return handleExceptionInternal(e, responseBody, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }

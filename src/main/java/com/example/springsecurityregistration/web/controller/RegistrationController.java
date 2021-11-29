@@ -44,7 +44,7 @@ public class RegistrationController {
         this.messages = messages;
     }
 
-    @PostMapping("/registration")
+    @PostMapping("/registerUser")
     @ResponseStatus(HttpStatus.CREATED)
     public @ResponseBody
     GenericResponse registerUserAccount(@RequestBody @Valid RegistrationDto registrationDto,
@@ -87,8 +87,8 @@ public class RegistrationController {
                 messages.getMessage("message.resetPassEmailSent", null, request.getLocale()));
     }
 
-    @GetMapping("/changePassword")
-    public String showChangePasswordPage(@RequestParam("token") String token,
+    @GetMapping("/user/changePassword")
+    public String showChangePasswordPage(@RequestParam("token") String token, //TODO move to UserController
                                          Locale locale,
                                          Model model) {
 
@@ -108,7 +108,7 @@ public class RegistrationController {
 
     @PutMapping("/user/updatePassword")
     public @ResponseBody
-    GenericResponse updatePassword(@RequestBody @Valid UpdatePasswordDto updatePasswordDto,
+    GenericResponse updatePassword(@RequestBody @Valid UpdatePasswordDto updatePasswordDto, //TODO move to UserController
                                    Locale locale) {
 
         userService.changeUserPassword(AuthorizationUtil.getUserId(), updatePasswordDto);

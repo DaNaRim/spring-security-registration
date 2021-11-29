@@ -1,102 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="#{label.form.title}">form</title>
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <link crossorigin="anonymous" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" rel="stylesheet">
+    <link crossorigin="anonymous" href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet">
+    <title>smart parking</title>
 </head>
 <body>
-<form action="/" method="POST" enctype="utf8">
-    <input name="firstName" value=""/>
-    <span id="firstNameError" style="display:none"></span>
 
-    <input name="lastName" value=""/>
-    <span id="lastNameError" style="display:none"></span>
+    <form id="registration-form" class="form-signin" method="POST" th:action="@{/registerUser}">
+        <h2 class="form-signin-heading">Registration</h2>
+        <p>
+            <label class="sr-only" for="firstName">firstName</label>
+            <input class="form-control" id="firstName" name="firstName" placeholder="firstName" type="text">
+        </p>
+        <p>
+            <label class="sr-only" for="lastName">firstName</label>
+            <input class="form-control" id="lastName" name="lastName" placeholder="lastName" type="text">
+        </p>
+        <p>
+            <label class="sr-only" for="email">firstName</label>
+            <input class="form-control" id="email" name="email" placeholder="email" type="email">
+        </p>
+        <p>
+            <label class="sr-only" for="password">Password</label>
+            <input class="form-control" id="password" name="password" placeholder="Password" required
+                   type="password">
+        </p>
+        <p>
+            <label class="sr-only" for="matchingPassword">Password</label>
+            <input class="form-control" id="matchingPassword" name="matchingPassword" placeholder="matchingPassword" required
+                   type="password">
+        </p>
 
-    <input name="email" value=""/>
-    <span id="emailError" style="display:none"></span>
-
-    <input name="password" value="" type="password"/>
-    <span id="passwordError" style="display:none"></span>
-
-    <input name="matchingPassword" value="" type="password"/>
-    <span id="globalError" style="display:none"></span>
-
-    <a href="#" onclick="register()" th:text="#{label.form.submit}">submit</a>
-</form>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Register account</button>
+    </form>
 
 
-<script src="jquery.min.js"></script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    // var serverContext = [[@{/}]];
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.serializeJSON/3.1.1/jquery.serializejson.min.js"></script>
+<script>
+    const home = "http://localhost:8080/";
 
-        $(document).ready(function () {
-            $('form').submit(function (event) {
-                register(event);
-            });
-
-            $(":password").keyup(function () {
-                if ($("#password").val() !== $("#matchPassword").val()) {
-                    $("#globalError").show().html('<spring:message code="error.passwordMatches"/>');
-                } else {
-                    $("#globalError").html("").hide();
-                }
-            });
-
-            options = {
-                common: {minChar: 8},
-                ui: {
-                    showVerdictsInsideProgressBar: true,
-                    showErrors: true,
-                    errorMessages: {
-                        wordLength: '<spring:message code="error.wordLength"/>',
-                        wordNotEmail: '<spring:message code="error.wordNotEmail"/>',
-                        wordSequences: '<spring:message code="error.wordSequences"/>',
-                        wordLowercase: '<spring:message code="error.wordLowercase"/>',
-                        wordUppercase: '<spring:message code="error.wordUppercase"/>',
-                        wordOneNumber: '<spring:message code="error.wordOneNumber"/>',
-                        wordOneSpecialChar: '<spring:message code="error.wordOneSpecialChar"/>'
-                    }
-                }
-            };
-            $('#password').pwstrength(options);
-        });
-
-    function register(event) {
-        event.preventDefault();
-        $(".alert").html("").hide();
-        $(".error-list").html("");
-        if ($("#password").val() !== $("#matchPassword").val()) {
-            $("#globalError").show().html('<spring:message code="error.passwordMatches"/>');
-            return;
-        }
-        var formData = $('form').serialize();
-        $.post(serverContext + "user/registration", formData, function (data) {
-            if (data.message === "success") {
-                window.location.href = serverContext + "successRegister.html";
+    $("#registration-form").submit(function (e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            contentType: "application/json",
+            url: home + "registerUser",
+            data: JSON.stringify($("#registration-form").serializeJSON()),
+            dataType: 'json',
+            success: function () {
+                alert('Success');
+            },
+            error: function (xhr) {
+                alert(xhr.responseText);
             }
-
-        })
-            .fail(function (data) {
-                if (data.responseJSON.error.indexOf("MailError") > -1) {
-                    window.location.href = serverContext + "emailError.html";
-                } else if (data.responseJSON.error === "UserAlreadyExist") {
-                    $("#emailError").show().html(data.responseJSON.message);
-                } else if (data.responseJSON.error.indexOf("InternalError") > -1) {
-                    window.location.href = serverContext + "login?message=" + data.responseJSON.message;
-                } else {
-                    var errors = $.parseJSON(data.responseJSON.message);
-                    $.each(errors, function (index, item) {
-                        $("#" + item.field + "Error").show().html(item.defaultMessage);
-                    });
-                    errors = $.parseJSON(data.responseJSON.error);
-                    $.each(errors, function (index, item) {
-                        $("#globalError").show().append(item.defaultMessage + "<br/>");
-                    });
-                }
-            });
-    }
-    /*]]>*/
+        });
+    });
 </script>
 </body>
 </html>
